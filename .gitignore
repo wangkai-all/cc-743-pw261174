@@ -32,3 +32,6 @@ test-results/
 *.sqlite3-shm
 *.sqlite3-journal
 !*.traineddata.gz
+
+# Local JSON persistence for the admissions demo
+/var/

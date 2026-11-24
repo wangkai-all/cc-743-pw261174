@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232a78d6'/%3E%3Ctext x='50' y='70' font-size='58' text-anchor='middle' fill='white' font-family='sans-serif'%3E%E9%85%8D%3C/text%3E%3C/svg%3E" />
+  <title>清河招生匹配分析台 · 虚构数据</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">配</div>
+      <div>
+        <h1>招生匹配分析台</h1>
+        <p>确定性优先级 · 共享专项 · 承诺补录 · 稳定性核对</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="badge badge-neutral" title="所有学生与学校均为虚构">虚构数据沙盒</span>
+      <button id="themeToggle" class="btn btn-ghost" type="button" aria-pressed="false">🌙 深色</button>
+      <button id="resetDemo" class="btn btn-secondary" type="button">重置主演示</button>
+      <button id="resetCoalition" class="btn btn-outline" type="button">载入承诺联盟示例</button>
+    </div>
+  </header>
+
+  <main id="main" class="layout">
+    <section class="hero panel">
+      <div>
+        <p class="eyebrow">当前轮次 <strong id="roundLabel">—</strong></p>
+        <h2 id="scenarioTitle">清河学区 2026 招生分配</h2>
+        <p id="scenarioNotice" class="muted">所有人物、校区、成绩与名额均为虚构。</p>
+      </div>
+      <div class="seed-box">
+        <span class="muted">保存的抽签种子</span>
+        <code id="seedText">—</code>
+        <small>同层级并列只按首次生成并保存的抽签号排序，重复计算不重抽。</small>
+      </div>
+    </section>
+
+    <section id="kpiGrid" class="kpi-grid" aria-label="关键指标"></section>
+    <div id="alertStack" class="alert-stack" aria-live="polite"></div>
+
+    <nav class="tabs" role="tablist" aria-label="分析模块">
+      <button class="tab active" data-tab="assignments" role="tab" aria-selected="true">录取与“为什么”</button>
+      <button class="tab" data-tab="actions" role="tab" aria-selected="false">提交 / 容量 / 撤回</button>
+      <button class="tab" data-tab="capacity" role="tab" aria-selected="false">容量与回流</button>
+      <button class="tab" data-tab="stability" role="tab" aria-selected="false">稳定性与联盟</button>
+      <button class="tab" data-tab="rounds" role="tab" aria-selected="false">每轮申请日志</button>
+      <button class="tab" data-tab="verify" role="tab" aria-selected="false">穷举核验</button>
+      <button class="tab" data-tab="ties" role="tab" aria-selected="false">种子与并列</button>
+    </nav>
+
+    <section id="tab-assignments" class="tab-panel active" role="tabpanel">
+      <div class="grid two-one">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>学生分配总表</h3>
+            <input id="studentSearch" class="input" type="search" placeholder="搜索姓名 / 编号" aria-label="搜索学生" />
+          </div>
+          <div class="table-wrap">
+            <table class="table" id="assignmentTable">
+              <thead><tr><th>学生</th><th>池别</th><th>结果</th><th>志愿</th><th>来源</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel explanation-panel">
+          <div class="panel-head"><h3>逐志愿解释</h3></div>
+          <div class="candidate-picker-row">
+            <label class="field grow">
+              <span>选择学生</span>
+              <select id="explainCandidate" class="input"></select>
+            </label>
+          </div>
+          <div id="explanationBody" class="explanation-body"><p class="muted">请选择一名学生。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-actions" class="tab-panel" role="tabpanel" hidden>
+      <div class="grid three-forms">
+        <form id="addCandidateForm" class="panel form-card">
+          <h3>① 提交新学生志愿</h3>
+          <label class="field"><span>姓名</span><input name="name" class="input" required placeholder="例如：沈知夏" /></label>
+          <div class="field-row">
+            <label class="field"><span>池别</span>
+              <select name="pool" class="input"><option value="normal">普通池</option><option value="special">专项池</option></select>
+            </label>
+            <label class="field"><span>数学</span><input name="maths" class="input" type="number" min="0" max="100" placeholder="—" /></label>
+            <label class="field"><span>科学</span><input name="science" class="input" type="number" min="0" max="100" placeholder="—" /></label>
+          </div>
+          <div class="field-row">
+            <label class="field"><span>优先层级</span>
+              <select name="priority_tier" class="input">
+                <option value="">无特别优先</option>
+                <option value="sibling">兄弟姐妹在读</option>
+                <option value="legacy">教职工子女</option>
+                <option value="diversity">就近/多元</option>
+              </select>
+            </label>
+            <label class="field grow"><span>优先认定校区/专项</span><select name="priority_accepter_id" class="input accepter-options"></select></label>
+          </div>
+          <fieldset class="choices-field">
+            <legend>志愿顺序（留空则跳过）</legend>
+            <select name="choice_1" class="input accepter-options"></select>
+            <select name="choice_2" class="input accepter-options"></select>
+            <select name="choice_3" class="input accepter-options"></select>
+            <select name="choice_4" class="input accepter-options"></select>
+          </fieldset>
+          <div class="form-actions">
+            <button type="button" class="btn btn-text" id="fillPromiseExample">填入“承诺阻挡”示例</button>
+            <button type="submit" class="btn btn-primary">预览新增与两种政策</button>
+          </div>
+        </form>
+
+        <form id="capacityForm" class="panel form-card">
+          <h3>② 更改一项容量</h3>
+          <label class="field"><span>项目</span><select name="accepter_id" class="input" id="capacityAccepter"></select></label>
+          <div class="field-row">
+            <label class="field"><span>容量口径</span><select name="pool" class="input" id="capacityPool"></select></label>
+            <label class="field grow"><span>新容量</span><input name="new_capacity" class="input" type="number" min="0" required /></label>
+          </div>
+          <p class="hint">普通校区可改普通/专项基数；跨校 J1 改共享总容量。未用专项是否回流由项目配置决定。</p>
+          <button type="submit" class="btn btn-primary">预览容量变更</button>
+        </form>
+
+        <form id="withdrawForm" class="panel form-card">
+          <h3>③ 撤回一名学生</h3>
+          <label class="field"><span>撤回学生</span><select name="candidate_id" class="input" id="withdrawCandidate"></select></label>
+          <label class="field"><span>原因（保存到轮次）</span><input name="reason" class="input" placeholder="例如：搬迁至其他学区" /></label>
+          <button type="button" class="btn btn-text" id="fillChainExample">填入 C02：可看两步补录链与承诺阻挡</button>
+          <p class="hint">提交后该学生当前有效承诺席位会标记释放，并以下一轮号保存撤回记录。</p>
+          <button type="submit" class="btn btn-danger">预览撤回与补录链</button>
+        </form>
+      </div>
+
+      <div class="panel baseline-compare">
+        <div>
+          <h3>先看两种政策在当前状态下的差异</h3>
+          <p class="hint">不提交任何变更，只并行计算一次：初始轮次的承诺集合来自已保存分配，因此两种结果通常一致；进行撤回、增容或新增学生后差异会更明显。</p>
+        </div>
+        <button id="compareCurrent" class="btn btn-outline" type="button">无变更比较</button>
+      </div>
+
+      <div id="previewPanel" class="panel preview-panel" hidden>
+        <div class="panel-head">
+          <div><h3>政策预览与比较</h3><p id="previewTitle" class="muted"></p></div>
+          <div class="commit-actions">
+            <button id="commitProtect" class="btn btn-primary" type="button">按“保留承诺”提交</button>
+            <button id="commitFull" class="btn btn-secondary" type="button">按“整体重算”提交</button>
+          </div>
+        </div>
+        <div id="previewContent"></div>
+      </div>
+    </section>
+
+    <section id="tab-capacity" class="tab-panel" role="tabpanel" hidden>
+      <div class="panel">
+        <div class="panel-head"><h3>容量核对与专项回流</h3><span id="capacityStatusPill"></span></div>
+        <div id="capacityCards" class="capacity-grid"></div>
+        <h4>容量审计表</h4>
+        <div class="table-wrap">
+          <table class="table" id="capacityTable">
+            <thead><tr><th>项目</th><th>普通基数</th><th>普通有效容量</th><th>普通已用</th><th>专项基数</th><th>专项有效容量</th><th>专项已用</th><th>回流普通</th><th>空闲/保留</th><th>核对</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <h4>转换记录</h4>
+        <div id="conversionBody" class="table-wrap"></div>
+      </div>
+    </section>
+
+    <section id="tab-stability" class="tab-panel" role="tabpanel" hidden>
+      <div class="grid two-one">
+        <div class="panel">
+          <div class="panel-head"><h3>可阻挡配对 Blocking pairs</h3><span id="pairCountPill" class="pill"></span></div>
+          <p class="hint">定义：学生更偏好某项目，且该项目有空位，或学生的保存优先序严格高于当前末位录取者。</p>
+          <div id="blockingPairsBody" class="table-wrap"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>短周期交换联盟</h3><span id="coalitionCountPill" class="pill"></span></div>
+          <div id="coalitionsBody"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>冲突与不可同时满足项</h3><span id="conflictCountPill" class="pill"></span></div>
+        <div id="conflictsBody"></div>
+      </div>
+    </section>
+
+    <section id="tab-rounds" class="tab-panel" role="tabpanel" hidden>
+      <div class="grid rounds-layout">
+        <div class="panel round-list">
+          <h3>已保存轮次</h3>
+          <div id="roundList" class="round-list-items"></div>
+        </div>
+        <div class="panel round-detail">
+          <div class="panel-head"><h3 id="roundDetailTitle">轮次详情</h3><div id="roundFilters" class="filter-row"></div></div>
+          <div id="roundMeta" class="round-meta"></div>
+          <div class="table-wrap event-log-wrap">
+            <table class="table" id="eventTable">
+              <thead><tr><th>学生</th><th>项目</th><th>阶段</th><th>结果</th><th>原因 / 说明</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-verify" class="tab-panel" role="tabpanel" hidden>
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>小实例穷举核实</h3><p class="muted">独立枚举所有 candidate → accepter/unmatched 组合，并不依赖审计模块的 blocking pair 实现。</p></div>
+          <button id="runVerify" class="btn btn-primary" type="button">重新运行穷举核验</button>
+        </div>
+        <div id="verifySummary" class="verify-summary"></div>
+        <div id="verifyCases" class="verify-grid"></div>
+      </div>
+    </section>
+
+    <section id="tab-ties" class="tab-panel" role="tabpanel" hidden>
+      <div class="panel">
+        <div class="panel-head"><h3>保存种子与同层级并列顺序</h3><button id="copySeed" class="btn btn-outline" type="button">复制种子</button></div>
+        <p class="hint">严格排序键为 <code>(优先层级, 首次保存的 SHA-256 抽签号, 学生 ID)</code>。抽签号由种子、项目、学生派生；已有值永不覆盖。</p>
+        <div class="table-wrap">
+          <table class="table" id="tieTable">
+            <thead><tr><th>项目</th><th>学生</th><th>层级</th><th>抽签号</th><th>排序键</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
